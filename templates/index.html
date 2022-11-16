@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <h1>About me</h1>
+    <p>This website was built with Python via the Flask framework.</p>
+    <form action="" method="POST">
+        <label for="age">Enter age:</label>
+        <input type="text" name="age" id="name" placeholder="Age" required>
+        <br>
+        <br>
+        <label for="time">Enter time:</label>
+        <input type="text" name="time" id="name" placeholder="HH:MM:SS" >
+        <br>
+        <br>
+        <label for="start point">Enter start point:</label>
+        <input type="text" name="start_x" id="name" placeholder="start x" required>
+        <input type="text" name="start_y" id="name" placeholder="start y" required>
+        <br>
+        <br>
+        <label for="end point">Enter end point:</label>
+        <input type="text" name="end_x" id="name" placeholder="end x" required>
+        <input type="text" name="end_y" id="name" placeholder="end y" required>
+        <br>
+        <br>
+        <input type="submit">
+        <br>
+        <br>
+          {% for table in tables %}
+            {{ table|safe }}
+          {% endfor %}
+    </form>
+ </body>
+
+</html>
