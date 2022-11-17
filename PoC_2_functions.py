@@ -8,7 +8,7 @@ import glob
 import os
 from datetime import datetime
 from flask import Flask, render_template, request
-
+# from PoC_2_Main import app
 database_name = "PoC_2_wroclaw_mpk.db"
 
 app = Flask(__name__)
@@ -19,33 +19,33 @@ def index():
 
 
 def download_data(URL,fileName,path):
-    print("pobieranie danych ze strony MPK Wrocław...")
+    print("Downloading data from the MPK Wrocław website...")
     # download the data
     response = requests.get(URL)
     # Open the response into a new file called "OtwartyWroclaw_rozklad_jazdy_GTFS.zip"
     open(fileName, "wb").write(response.content)
-    # Extracting all the files of the zip into a specific location.
+    # Extract all the files of the zip into a specified location.
     with ZipFile(fileName, "r") as zip_ref:
         zip_ref.extractall(path)
     return(URL)
 
-#zamiana txt na csv
+#convert txt to csv
 def replace_txt_to_csv(txt_file_path=""):
-    print("przygotowanie plików .csv...")
+    print("Preparation of .csv files...")
     for file_path in glob.glob(txt_file_path):
         new_path = file_path.replace('.txt', '.csv')
         os.rename(file_path, new_path)
     return(file_path)
 
-#tworzenie bazy danych i połączenia z bazą danych
+#database creation and database connection
 def creating_database(database_name):
-    print("tworzenie bazy danych...")
+    print("Database creation...")
     conn = sqlite3.connect(database_name)
     c = conn.cursor()
 
-# przetwarzanie danych i wgrywanie ich na bazę
+# processing data and uploading them to the database
 def load_write_data(database_name, path, trips_csv, stops_csv, stop_times_csv):
-    print("ładowanie danych csv do bazy danych...")
+    print("Loading csv data into database...")
     conn = sqlite3.connect(database_name)
     trips_csv1 = pd.read_csv(path+"/"+trips_csv)
     stops_csv1 = pd.read_csv(path+"/"+stops_csv)
@@ -55,7 +55,7 @@ def load_write_data(database_name, path, trips_csv, stops_csv, stop_times_csv):
     stops_csv1.to_sql(stops_csv, conn, if_exists='replace', index = False)
     stop_times_csv1.to_sql(stop_times_csv, conn, if_exists='replace', index = False)
 
-#wyciąganie niezbędnych do działania aplikacji danych z bazy
+#Extracting data necessary for the operation of the application from the database
 def sql_query(database_name):
     global df_sql_query
     conn = sqlite3.connect(database_name)
@@ -63,15 +63,35 @@ def sql_query(database_name):
     return(df_sql_query)
 #print(df_sql_query.dtypes)
 
-#odpowiedzi użytkownika z formularza
+#user responses from the form
+#@app.route('/', methods=['GET', 'POST'])
 def user_answers():
     global age
     global data_start_point
     global data_end_point
     global departure_time_user
     age = int(request.form['age'])
-    time = request.form['time']  
-    departure_time_user = datetime.strptime(time, '%H:%M:%S').time()
+    now = datetime.now()
+    current_hour = now.strftime("%H")
+    current_minute = now.strftime("%M")
+
+    #preparing of time. if user don't give value that return current time
+    time_hour = request.form['time_hour']  
+    if time_hour:
+        time_hour = time_hour
+    if not time_hour:
+        time_hour = current_hour
+
+    time_minute = request.form['time_minute']
+    if time_minute:
+        time_minute = time_minute
+    if not time_minute:
+        time_minute = current_minute
+
+    departure_time_user = str(time_hour)+':'+str(time_minute) + ':00'
+    departure_time_user = datetime.strptime(departure_time_user, '%H:%M:%S').time()
+    # today = datetime.time.today()
+
     x = float(request.form['start_x'])
     y = float(request.form['start_y'])
     data_start_point = [[1, x, y]]
@@ -81,7 +101,7 @@ def user_answers():
     return age, departure_time_user, data_start_point, data_end_point
 
 
-#tworzenie data frame z punktu początkowego podanego przez użytkownika
+#Creating a data frame from a user-specified starting point
 def dataframe_start_point():
     user_answers()
     global df_input_data_start_point
@@ -93,7 +113,7 @@ def dataframe_start_point():
     #print(str(df_input_data_start_point))
     return(df_input_data_start_point)
 
-#tworzenie data frame z punktu końcowego podanego przez użytkownika
+#Creating a data frame from a user-specified endpoint
 def dataframe_end_point():
     user_answers()
     global df_input_data_end_point
@@ -105,7 +125,7 @@ def dataframe_end_point():
     #print(df_input_data_end_point)
     return(df_input_data_end_point)
 
-# data frame z danych z bazy 
+# Creating a dataframe from data from the database
 def dataframe_data_from_db():
     sql_query(database_name)
     global df_data_from_db
@@ -115,13 +135,13 @@ def dataframe_data_from_db():
     df_data_from_db[['lat_radians_Y','long_radians_Y']] = (np.radians(df_data_from_db.loc[:,['x','y']]))
     return(df_data_from_db)
 
-#obliczanie dystansu z punktu początkowego do przystanków
+#Calculating the distance from the starting point to the stops
 def distance_start_point_to_stops():
     dataframe_start_point()
     dataframe_data_from_db()
-    print("obliczanie odległości z punktu początkowego do przystanków...")
+    print("Calculating the distance from the starting point to the stops...")
     global df_with_distance_start_point
-    #odległosć od punktu początkowego do przystanków
+    #distance from starting point to stops
     dist = sklearn.metrics.DistanceMetric.get_metric('haversine')
     dist_matrix_start_point = (dist.pairwise
                 (df_input_data_start_point[['lat_radians_X_start_point','long_radians_X_start_point']],
@@ -144,10 +164,10 @@ def distance_start_point_to_stops():
     #pd.DataFrame(df_with_distance_start_point).to_csv("C:/Users/apiaskow/Desktop/Python_codes/PoC_2/df_with_distance_start_point.csv")
     return(df_with_distance_start_point)
 
-#obliczanie dystansu z punktu końcowego do przystanków
+#Calculating the distance from the end point to the stops
 def distance_end_point_to_stops():
     dataframe_end_point()
-    print("obliczanie odległości z punktu końcowego do najbliższego przystanku...")
+    print("Calculating the distance from the end point to the nearest stop...")
     global df_with_distance_end_point
     #odległosć punktu końcowego do najbliższego przystanku
     dist = sklearn.metrics.DistanceMetric.get_metric('haversine')
@@ -162,7 +182,7 @@ def distance_end_point_to_stops():
     df_dist_unpv_end_point = (pd.melt(df_dist_matrix_end_point.reset_index(),id_vars='id'))
     #Rename  column 
     df_dist_unpv_end_point= df_dist_unpv_end_point.rename(columns={'value':'distance_to_end_point'})
-    df_dist_unpv_end_point = df_dist_unpv_end_point[(df_dist_unpv_end_point['distance_to_end_point'] <= 3)]
+    df_dist_unpv_end_point = df_dist_unpv_end_point[(df_dist_unpv_end_point['distance_to_end_point'] <= 1)]
     df_with_distance_end_point = pd.merge(df_data_from_db, df_dist_unpv_end_point,  how='right', left_on=['stop_id'], right_on = ['stop_id'])
     
     # changing_formats end point   
@@ -174,11 +194,11 @@ def distance_end_point_to_stops():
     #pd.DataFrame(df_with_distance_end_point).to_csv("C:/Users/apiaskow/Desktop/Python_codes/PoC_2/df_with_distance_end_point.csv")
     return(df_with_distance_end_point)
 
-#przygotowanie informacji o tym, czy "jedziemy" w dobrym kierunku
+#Preparing information about whether we are going in the right direction
 def distance_start_end_direction():
     distance_start_point_to_stops()
     distance_end_point_to_stops()
-    print("przygotowanie dystansu wraz z kierunkiem jazdy...")
+    print("Preparation of the distance along with the direction of travel...")
     global df_direction
     # end_stop_and_direction(df_with_distance):
     df_direction = pd.merge(df_with_distance_start_point, df_with_distance_end_point,  how='inner', left_on=['trip_id','direction_id'], right_on = ['trip_id','direction_id'])
@@ -187,7 +207,7 @@ def distance_start_end_direction():
     #print(df_direction)
     return(df_direction)
 
-#tworzenie tabeli końcowej uwzględniającej kryteria wieku (odległości od punktu początkowego), czasu odjazdu i właściwego kierunku
+#Creating a final table taking into account the criteria of age (distance from the starting point), departure time and the right direction
 @app.route('/', methods=['GET', 'POST'])
 def table_with_routes():
     distance_start_end_direction()
@@ -197,7 +217,7 @@ def table_with_routes():
         df_filter_dist_time = df_filter_dist_time.drop_duplicates(subset=['stop_id_x'])
         df_filter_dist_time = df_filter_dist_time[['stop_name_x', 'departure_time','distance', 'arrival_time_y', 'stop_name_y', 'distance_to_end_point']]
         df_filter_dist_time=df_filter_dist_time.iloc[:5]
-        print("wynik końcowy to: ")
+        print("The end result is: ")
         print(df_filter_dist_time)
         #pd.DataFrame(df_filter_dist_time).to_csv("C:/Users/apiaskow/Desktop/Python_codes/PoC_2/mask.csv")
         return render_template('index.html', tables=[df_filter_dist_time.to_html(classes='data', header="true")])
@@ -208,7 +228,7 @@ def table_with_routes():
         df_filter_dist_time.columns = ['closest start stop', 'departure time', 'distance [km]', 'closest end stop', 'arrival time', 'distance to end point [km]']
         df_filter_dist_time=df_filter_dist_time.iloc[:5]
         #pd.DataFrame(df_filter_dist_time).to_csv("C:/Users/apiaskow/Desktop/Python_codes/PoC_2/mask_24.csv")
-        print("wynik końcowy to: ")
+        print("The end result is: ")
         print(df_filter_dist_time)
         return render_template('index.html', tables=[df_filter_dist_time.to_html(classes='data', header="true")])
         #return(df_filter_dist_time)
@@ -218,7 +238,7 @@ def table_with_routes():
         df_filter_dist_time = df_filter_dist_time.drop_duplicates(subset=['stop_id_x'])
         df_filter_dist_time = df_filter_dist_time[['stop_name_x', 'departure_time','distance', 'arrival_time_y', 'stop_name_y', 'distance_to_end_point']]
         df_filter_dist_time=df_filter_dist_time.iloc[:5]
-        print("wynik końcowy to: ")
+        print("The end result is: ")
         print(df_filter_dist_time)
         return render_template('index.html', tables=[df_filter_dist_time.to_html(classes='data', header="true")])  
         #pd.DataFrame(df_filter_dist_time).to_csv("C:/Users/apiaskow/Desktop/Python_codes/PoC_2/mask.csv")
@@ -227,7 +247,7 @@ def table_with_routes():
         df_filter_dist_time = df_filter_dist_time.drop_duplicates(subset=['stop_id_x'])
         df_filter_dist_time = df_filter_dist_time[['stop_name_x', 'departure_time','distance', 'arrival_time_y', 'stop_name_y', 'distance_to_end_point']]
         df_filter_dist_time=df_filter_dist_time.iloc[:5]
-        print("wynik końcowy to: ")       
+        print("The end result is: ")       
         print(df_filter_dist_time)
         return render_template('index.html', tables=[df_filter_dist_time.to_html(classes='data', header="true")])
         #pd.DataFrame(df_filter_dist_time).to_csv("C:/Users/apiaskow/Desktop/Python_codes/PoC_2/mask.csv")
@@ -236,7 +256,7 @@ def table_with_routes():
         df_filter_dist_time = df_filter_dist_time.drop_duplicates(subset=['stop_id_x'])
         df_filter_dist_time = df_filter_dist_time[['stop_name_x', 'departure_time','distance', 'arrival_time_y', 'stop_name_y', 'distance_to_end_point']]
         df_filter_dist_time=df_filter_dist_time.iloc[:5]
-        print("wynik końcowy to: ")
+        print("The end result is: ")
         print(df_filter_dist_time)
         return render_template('index.html', tables=[df_filter_dist_time.to_html(classes='data', header="true")])
         #pd.DataFrame(df_filter_dist_time).to_csv("C:/Users/apiaskow/Desktop/Python_codes/PoC_2/mask.csv")
@@ -245,7 +265,7 @@ def table_with_routes():
         df_filter_dist_time = df_filter_dist_time.drop_duplicates(subset=['stop_id_x'])
         df_filter_dist_time = df_filter_dist_time[['stop_name_x', 'departure_time','distance', 'arrival_time_y', 'stop_name_y', 'distance_to_end_point']]
         df_filter_dist_time=df_filter_dist_time.iloc[:5]
-        print("wynik końcowy to: ")
+        print("The end result is: ")
         print(df_filter_dist_time)
         return render_template('index.html', tables=[df_filter_dist_time.to_html(classes='data', header="true")])
 
