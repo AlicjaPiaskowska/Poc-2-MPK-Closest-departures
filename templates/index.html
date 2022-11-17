@@ -5,21 +5,23 @@
     <p>This website was built with Python via the Flask framework.</p>
     <form action="" method="POST">
         <label for="age">Enter age:</label>
-        <input type="text" name="age" id="name" placeholder="Age" required>
+        <input type="number" name="age" id="name" min="0" max="150" placeholder="Age" required>
         <br>
         <br>
-        <label for="time">Enter time:</label>
-        <input type="text" name="time" id="name" placeholder="HH:MM:SS" >
+        <label for="time_hour">Enter time (optional): hour</label>
+        <input type="number" name="time_hour" id="name" min="0" max="23"  placeholder="HH" >
+        <label for="time_minute">minute</label>
+        <input type="number" name="time_minute" id="name" min="0" max="59" placeholder="MM" >
         <br>
         <br>
         <label for="start point">Enter start point:</label>
-        <input type="text" name="start_x" id="name" placeholder="start x" required>
-        <input type="text" name="start_y" id="name" placeholder="start y" required>
+        <input type="number" step=any name="start_x" id="name" min="49" max="55" placeholder="start x" required>
+        <input type="number" step=any name="start_y" id="name" min="14" max="25" placeholder="start y" required>
         <br>
         <br>
         <label for="end point">Enter end point:</label>
-        <input type="text" name="end_x" id="name" placeholder="end x" required>
-        <input type="text" name="end_y" id="name" placeholder="end y" required>
+        <input type="number" step=any name="end_x" id="name" min="49" max="55" placeholder="end x" required>
+        <input type="number" step=any name="end_y" id="name" min="14" max="25" placeholder="end y" required>
         <br>
         <br>
         <input type="submit">
