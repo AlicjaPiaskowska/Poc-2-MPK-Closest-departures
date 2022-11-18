@@ -11,6 +11,8 @@
 **Plik z bibliotekami:** 
 - requirements.txt
 
+## Działanie kodu:
+Nalezy uruchamiać funkcje z pliku PoC_2_Main.py. Po wywołaniu pliku w konsoli pojawi się ścieżka do HTML. Nalezy przejść do pliku HTML - znajduje się tam aplikacji- wypełnić formularz. Po wypełnieniu formularza pojawi się tabelka wynikowa.
 
 ## Działanie aplikacji:
 **w formularzu są do wypełnienia pola:**
