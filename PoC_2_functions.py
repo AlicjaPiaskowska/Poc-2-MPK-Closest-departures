@@ -8,8 +8,11 @@ import glob
 import os
 from datetime import datetime
 from flask import Flask, render_template, request
+import shutil
+
 # from PoC_2_Main import app
 database_name = "PoC_2_wroclaw_mpk.db"
+
 
 app = Flask(__name__)
 
@@ -17,6 +20,12 @@ app = Flask(__name__)
 def index():
     return render_template('index.html')
 
+
+def delateing_folder_with_data_if_exists(path_data):
+    if os.path.exists(path_data):
+        shutil.rmtree(path_data)
+    else:
+        return None
 
 def download_data(URL,fileName,path):
     print("Downloading data from the MPK Wrocław website...")
@@ -269,5 +278,8 @@ def table_with_routes():
         print(df_filter_dist_time)
         return render_template('index.html', tables=[df_filter_dist_time.to_html(classes='data', header="true")])
 
-if __name__ == '__main__':
-    app.run(debug=True)
+# if __name__ == '__main__':
+#     app.run(debug=True)
+
+def run_app():
+    return app.run(debug=True)
