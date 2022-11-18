@@ -31,14 +31,10 @@
 - po wybraniu danych i kliknięciu "submit" pokazuje się tabelka, ale znikają wszystkie dane wpisane przez użytkownika - można np. jakoś zachować wybrane dane
 - jeżeli nie ma przystanku dla okreslonych kryteriów, wówczas pokazuje się pusta tabelka - można dodać informacje, że przy wybranych kryteriach nie znaleziono połączenia
 
-## Problemy z kodem:
-mam dwa pliki python. W jednym (o nazwie PoC_2_functions) są wszystkie funkcje, w drugim (PoC_2_Main) są wywołania tych funkcji. W pierwszym pliku mam też funkcje używające flask, po wywołaniu kodu z tego pierwszego pliku w konsoli pojawia się adres HTTP, i jak go klikniemy to pojawia się formularz do wypełnienia przez użytkownika. Nie wiem jeszcze co zrobić, żeby adres HTTP pojawiał się przy wowołaniu kodu z pliku „PoC_2_Main”
-
 
 ## Dodatkowo do zrobienia + potencjalne problemy:
 -	Testy
 -	Na ten moment pliki txt ze strony internetowej przerabiane są na csv w taki sposób, że zmieniane jest rozszerzenie plików z .txt na .csv – teraz to działa ok, ale nie wiem czy to najlepszy sposób, więc warto się zastanawić nad tym
--	Nie wszystkie biblioteki w pliku „requirements.txt” są niezbędne (często jakieś biblioteki były instalowane do przetestowania jakieś funkcjonalności i zostały) – zrobić z tym porządek
 
 
 ## jakie testy można zrobić?
