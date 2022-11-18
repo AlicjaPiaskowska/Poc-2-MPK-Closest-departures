@@ -21,11 +21,11 @@ stop_times_csv = "stop_times.csv"
 #Recall of functions
 # downloading data and uploading them to the database
 
-#f.delateing_folder_with_data_if_exists(path_data)
-#f.download_data(URL, fileName, path_data)
-#f.replace_txt_to_csv(txt_file_path)
-# f.creating_database(database_name)
-# f.load_write_data(database_name, path_data, trips_csv, stops_csv, stop_times_csv)
+f.delateing_folder_with_data_if_exists(path_data)
+f.download_data(URL, fileName, path_data)
+f.replace_txt_to_csv(txt_file_path)
+f.creating_database(database_name)
+f.load_write_data(database_name, path_data, trips_csv, stops_csv, stop_times_csv)
 
 ## Collecting user responses
 print("Please go to http link")
