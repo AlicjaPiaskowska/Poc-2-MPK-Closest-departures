@@ -209,7 +209,7 @@ def distance_end_point_to_stops():
     #pd.DataFrame(df_with_distance_end_point).to_csv("C:/Users/apiaskow/Desktop/Python_codes/PoC_2/df_with_distance_end_point.csv")
     return(df_with_distance_end_point)
 
-#Preparing information about whether we are going in the right direction
+#Preparing information about if we are going in the right direction
 def distance_start_end_direction():
     distance_start_point_to_stops()
     distance_end_point_to_stops()
