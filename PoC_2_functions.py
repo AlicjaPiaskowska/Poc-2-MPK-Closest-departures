@@ -10,9 +10,6 @@ from datetime import datetime
 from flask import Flask, render_template, request
 import shutil
 
-# from PoC_2_Main import app
-database_name = "PoC_2_wroclaw_mpk.db"
-
 
 app = Flask(__name__)
 
@@ -47,13 +44,19 @@ def replace_txt_to_csv(txt_file_path=""):
     return(file_path)
 
 #database creation and database connection
-def creating_database(database_name):
+def database_name_function(database_name_):
+  global database_name
+  database_name = database_name_
+  return database_name
+
+
+def creating_database():
     print("Database creation...")
     conn = sqlite3.connect(database_name)
     c = conn.cursor()
 
 # processing data and uploading them to the database
-def load_write_data(database_name, path, trips_csv, stops_csv, stop_times_csv):
+def load_write_data(path, trips_csv, stops_csv, stop_times_csv):
     print("Loading csv data into database...")
     conn = sqlite3.connect(database_name)
     trips_csv1 = pd.read_csv(path+"/"+trips_csv)
@@ -64,12 +67,14 @@ def load_write_data(database_name, path, trips_csv, stops_csv, stop_times_csv):
     stops_csv1.to_sql(stops_csv, conn, if_exists='replace', index = False)
     stop_times_csv1.to_sql(stop_times_csv, conn, if_exists='replace', index = False)
 
+
 #Extracting data necessary for the operation of the application from the database
 def sql_query(database_name):
     global df_sql_query
+    database_name =database_name
     conn = sqlite3.connect(database_name)
     df_sql_query = pd.read_sql_query("select stop_lat as x, stop_lon as y, s.stop_id, arrival_time, departure_time, stop_name, stop_sequence,t.trip_id,trip_headsign,direction_id from 'stop_times.csv' as st left join 'stops.csv' as s on st.stop_id = s.stop_id left join 'trips.csv' as t on st.trip_id = t.trip_id ", conn)
-    return(df_sql_query)
+    return(df_sql_query, database_name)
 #print(df_sql_query.dtypes)
 
 #user responses from the form
@@ -135,7 +140,7 @@ def dataframe_end_point():
     return(df_input_data_end_point)
 
 # Creating a dataframe from data from the database
-def dataframe_data_from_db():
+def dataframe_data_from_db(database_name):
     sql_query(database_name)
     global df_data_from_db
     #data frame data from db
@@ -144,10 +149,11 @@ def dataframe_data_from_db():
     df_data_from_db[['lat_radians_Y','long_radians_Y']] = (np.radians(df_data_from_db.loc[:,['x','y']]))
     return(df_data_from_db)
 
+
 #Calculating the distance from the starting point to the stops
 def distance_start_point_to_stops():
     dataframe_start_point()
-    dataframe_data_from_db()
+    dataframe_data_from_db(database_name)
     print("Calculating the distance from the starting point to the stops...")
     global df_with_distance_start_point
     #distance from starting point to stops
@@ -164,8 +170,8 @@ def distance_start_point_to_stops():
     #Rename  column
     df_dist_unpv_start_point= df_dist_unpv_start_point.rename(columns={'value':'distance'})
     df_dist_unpv_start_point = df_dist_unpv_start_point[(df_dist_unpv_start_point['distance'] <= 5)]
+    #print(df_dist_unpv_start_point)
     df_with_distance_start_point = pd.merge(df_data_from_db, df_dist_unpv_start_point,  how='right', left_on=['stop_id'], right_on = ['stop_id'])
-    
     # changing_formats start point
     df_with_distance_start_point['departure_time'] = df_with_distance_start_point['departure_time'].replace({'^24:': '00:', '^25:': '01:', '^26:': '02:', '^27:': '03:', '^28:': '04:', '^29:': '05:', '^30:': '06:'},  regex=True)
     df_with_distance_start_point['departure_time'] = pd.to_datetime(df_with_distance_start_point['departure_time'], format='%H:%M:%S').dt.time
@@ -278,8 +284,7 @@ def table_with_routes():
         print(df_filter_dist_time)
         return render_template('index.html', tables=[df_filter_dist_time.to_html(classes='data', header="true")])
 
-# if __name__ == '__main__':
-#     app.run(debug=True)
+
 
 def run_app():
     return app.run(debug=True)
