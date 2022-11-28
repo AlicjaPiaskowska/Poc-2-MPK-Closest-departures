@@ -17,16 +17,16 @@ stop_times_csv = "stop_times.csv"
 
 
 #Recall of functions
-# downloading data and uploading them to the database
+#downloading data and uploading them to the database
 
-f.delateing_folder_with_data_if_exists(path_data)
-f.download_data(URL, fileName, path_data)
-f.replace_txt_to_csv(txt_file_path)
+# f.delateing_folder_with_data_if_exists(path_data)
+# f.download_data(URL, fileName, path_data)
+# f.replace_txt_to_csv(txt_file_path)
 
 f.database_name_function(database_name_)
 
-f.creating_database()
-f.load_write_data(path_data, trips_csv, stops_csv, stop_times_csv)
+# f.creating_database()
+# f.load_write_data(path_data, trips_csv, stops_csv, stop_times_csv)
 
 ## Collecting user responses
 print("Please go to http link")
@@ -35,8 +35,7 @@ f.user_answers()
 
 ## Calculating the distance and providing a table with the final results
 f.sql_query()
-f.dataframe_start_point()
-f.dataframe_end_point()
+f.make_radian()
 f.dataframe_data_from_db()
 f.distance_start_point_to_stops()
 f.distance_end_point_to_stops()
